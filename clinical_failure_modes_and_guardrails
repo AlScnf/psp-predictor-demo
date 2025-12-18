@@ -1,0 +1,119 @@
+# Clinical Failure Modes & Guardrails
+
+### PSP Predictor Demo (Applicant Note)
+
+**Applicant:** Alessandro Scanferla
+**Project:** PSP Predictor Demo (GBM, RANO-based)
+**Purpose of this note:** Explicit analysis of clinical risk, failure modes, and guardrails
+**Scope:** Research demonstration only — not a clinical system
+
+---
+
+## 1. Why Pseudoprogression Is a Clinically Dangerous Target
+
+Pseudoprogression (PSP) in glioblastoma represents a uniquely high-risk prediction target, not due to modeling difficulty alone, but because of its **clinical ambiguity and downstream consequences**.
+
+Key sources of risk include:
+
+* **Intrinsic label ambiguity**
+  PSP and true progression are often indistinguishable on short-term imaging, even for expert neuroradiologists, particularly in the early post-radiotherapy window.
+
+* **Temporal confounding**
+  PSP probability is strongly time-dependent, introducing risk of models learning “when” rather than “what”.
+
+* **Circularity of evaluation**
+  Many PSP labels are defined retrospectively using follow-up imaging and clinical evolution, creating implicit leakage risks if not handled explicitly.
+
+* **Protocol and scanner heterogeneity**
+  Differences in MRI acquisition parameters can dominate signal if not carefully controlled, especially in small cohorts.
+
+* **Clinical consequence asymmetry**
+  False reassurance (false non-PSP) carries higher clinical risk than false alarm, which must be reflected in decision framing.
+
+**Implication:**
+Any PSP model must be evaluated not only for predictive performance, but for how it *structures clinical uncertainty*.
+
+---
+
+## 2. Model Failure ≠ Clinical Harm
+
+This project explicitly distinguishes **model failure modes** from **clinical harm**, and introduces guardrails to prevent accidental misuse.
+
+| Failure Mode           | ML Perspective    | Potential Clinical Risk            | Guardrail in This Demo                |
+| ---------------------- | ----------------- | ---------------------------------- | ------------------------------------- |
+| False RED (high risk)  | Calibration error | Unnecessary escalation or anxiety  | Conservative thresholds; RED ≠ action |
+| False GREEN (low risk) | Missed signal     | Delayed recognition of progression | GREEN ≠ reassurance or discharge      |
+| Distribution shift     | Performance decay | Misleading confidence              | Explicit non-deploy positioning       |
+| Label noise            | AUROC inflation   | Overtrust in predictions           | Labels declared pseudo-ground truth   |
+
+**Key principle:**
+No output in this demo is framed as a decision, recommendation, or diagnostic statement.
+
+---
+
+## 3. Why This Is a Triage Lens, Not a Predictor
+
+The model is intentionally framed as a **triage lens**, not a classifier in the clinical sense.
+
+* It does **not** aim to resolve PSP vs progression.
+* It does **not** replace radiological or clinical judgment.
+* It does **not** reduce uncertainty to a binary outcome.
+
+Instead, its function is to:
+
+> **Structure uncertainty in a reproducible and calibrated way**, enabling more deliberate downstream review.
+
+Probabilistic outputs are mapped to **risk bands**, not decisions, and accompanied by conservative natural-language summaries that avoid prescriptive language.
+
+---
+
+## 4. Explicit Non-Use and Non-Claims
+
+This project deliberately avoids:
+
+* Claims of clinical readiness
+* Claims of diagnostic accuracy
+* Claims of outcome improvement
+* Claims of generalizability beyond the studied cohort
+
+It is **not** a Clinical Decision Support (CDS) system and is not designed for clinical deployment, regulatory submission, or patient-facing use.
+
+---
+
+## 5. What I Would *Not* Do Next
+
+To further reduce the risk of premature or unsafe conclusions, the following steps were intentionally **not** taken:
+
+* I would **not** increase model complexity without stronger clinical supervision.
+* I would **not** add new modalities without protocol harmonization.
+* I would **not** evaluate on external datasets without a relabeling strategy.
+* I would **not** expose raw probabilities directly to clinicians.
+* I would **not** optimize for headline metrics at the expense of calibration.
+
+Restraint is treated as a design choice, not a limitation.
+
+---
+
+## 6. Relevance to the Master Program
+
+Developing this project made explicit the limits of purely technical ML approaches in healthcare.
+
+The most critical open questions are not algorithmic, but clinical and methodological:
+
+* study design
+* evaluation standards
+* failure containment
+* clinician–AI interaction
+
+These are precisely the gaps this Master program is designed to address.
+
+---
+
+## Final Statement
+
+This project is intentionally conservative.
+
+Its goal is not to demonstrate what AI *can* do in neuro-oncology,
+but to demonstrate what it should **not claim**, **not automate**, and **not decide** without appropriate clinical grounding.
+
+

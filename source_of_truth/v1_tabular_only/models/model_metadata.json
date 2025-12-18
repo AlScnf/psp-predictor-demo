@@ -1,0 +1,12 @@
+{
+  "invert_lr": true,
+  "tabular_used": [
+    "enh_ml_dpct_prev",
+    "edema_ml_dpct_prev",
+    "whole_ml_dpct_prev",
+    "enh_ml_dpct_base",
+    "week_norm_bin"
+  ],
+  "pca_k": 0,
+  "mode": "tabular_only"
+}

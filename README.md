@@ -130,6 +130,24 @@ Outputs:
 
 ---
 
+## Calibration Behavior Note (v1)
+
+The v1 pipeline applies post-hoc isotonic calibration on stacked model outputs under a Leave-One-Patient-Out Cross-Validation (LOOCV) protocol.
+
+Given the limited cohort size, calibration exhibits a relatively steep probability mapping in certain regions of the score space.
+
+Importantly:
+
+- Ranking performance (AUC) remains unchanged.
+- The effect primarily alters absolute probability magnitudes.
+- Threshold-based triage decisions (RED / YELLOW / GREEN) remain stable.
+
+Therefore, calibrated probabilities should be interpreted as **triage-oriented risk scores**, not absolute clinical risk estimates.
+
+Future work includes external validation on a larger cohort to further stabilize probability calibration behavior.
+
+---
+
 ## Triage Scheme
 
 Thresholds are derived via **Decision Curve Analysis**.

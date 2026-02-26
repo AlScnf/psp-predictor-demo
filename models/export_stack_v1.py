@@ -111,7 +111,7 @@ ISO_MODEL      = MODELS_DIR / "calibration_active.joblib"   # recommended
 if not ISO_MODEL.exists():
     ISO_MODEL  = MODELS_DIR / "isotonic_stack.joblib"        # fallback
 
-THRESH_ACTIVE  = THRESH_DIR / "triage_thresholds_active.json"
+THRESH_ACTIVE  = THRESH_DIR / "triage_thresholds.json"
 
 # project data (only needed for --from_parquet / montage resolving)
 DATA_PATH      = ROOT / "data" / "processed" / "psp_multimodal.parquet"

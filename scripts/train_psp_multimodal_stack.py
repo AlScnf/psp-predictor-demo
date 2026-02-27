@@ -75,9 +75,10 @@ def main():
     if not feats: raise SystemExit("No features after gating.")
     nan_frac = df[feats].isna().mean()
     feats = [c for c in feats if nan_frac[c] <= args.nan_col_thresh]
-    if not feats: raise SystemExit("All features exceed NaN threshold.")
+    if not feats: 
+        raise SystemExit("All features exceed NaN threshold.")
 
-    patients = df["patient_id"].astype(str).unique()
+    patients = np.sort(df["patient_id"].astype(str).unique())
 
     # LR pipe
     lr_pipe = Pipeline([
@@ -146,28 +147,53 @@ def main():
               "AUPRC_randomLabel": float(average_precision_score(y_rand, p_stack))}
 
     meta_df = base_df.copy(); meta_df["p_stack"]=p_stack
-    meta_df.to_csv(out/"preds_oof_stacked.csv", index=False)
+    meta_df.to_csv(out/"preds_stack_in_sample.csv", index=False)
     metrics = {"LR": m_lr, "LGBM": m_lgbm, "STACK": m_stack}; metrics.update(m_rand)
     with open(out/"metrics_stack_loocv.json","w") as f: json.dump(metrics, f, indent=2)
 
+
     # ------------------------------
-    # SAVE MODELS (correct variables)
+    # FINAL FIT (train on full data) + SAVE MODELS
     # ------------------------------
     import joblib
+
+    Xfull_df = df[feats].copy()
+    yfull = y_true
+
+    # Fit calibrated LR on full data
+    lr_cal_final = CalibratedClassifierCV(lr_pipe, method="sigmoid", cv=3)
+    lr_cal_final.fit(Xfull_df.to_numpy(), yfull)
+
+    # Fit LGBM on full data
+    pos = int(yfull.sum())
+    neg = int(len(yfull) - pos)
+    spw = (neg / max(pos, 1))
+
+    lgbm_final = lgb.LGBMClassifier(**lgbm_params)
+    lgbm_final.set_params(scale_pos_weight=spw)
+    lgbm_final.fit(Xfull_df, yfull, eval_set=[(Xfull_df, yfull)], eval_metric="auc")
+
+    # Meta features on full data
+    p_lr_full = lr_cal_final.predict_proba(Xfull_df.to_numpy())[:, 1]
+    p_lgb_full = lgbm_final.predict_proba(Xfull_df)[:, 1]
+    Xmeta_full = np.vstack([p_lr_full, p_lgb_full]).T
+
+    # Fit calibrated meta model on full data
+    meta_cal_final = CalibratedClassifierCV(meta_pipe, method="sigmoid", cv=3)
+    meta_cal_final.fit(Xmeta_full, yfull)
 
     models_dir = Path(args.outdir) / "models"
     models_dir.mkdir(exist_ok=True, parents=True)
 
-    # Base Logistic Regression (calibrated)
-    joblib.dump(lr_cal, models_dir / "lr_base.joblib")
+    joblib.dump(lr_cal_final, models_dir / "lr_base.joblib")
+    joblib.dump(lgbm_final, models_dir / "lgbm_base.joblib")
+    joblib.dump(meta_cal_final, models_dir / "stack_model.joblib")
 
-    # Base LGBM (last trained instance)
-    joblib.dump(lgbm, models_dir / "lgbm_base.joblib")
+    # Save the feature list used by the final model
+    with open(models_dir / "features_used.json", "w") as f:
+        json.dump({"features": feats}, f, indent=2)
 
-    # Meta-model (stacking)
-    joblib.dump(meta_cal, models_dir / "stack_model.joblib")
-
-    print(f"[OK] Saved models → {models_dir}")
+    print(f"[OK] Saved FINAL models → {models_dir}")
 
 
 

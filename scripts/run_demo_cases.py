@@ -6,6 +6,31 @@ import sys
 from pathlib import Path
 
 
+def _extract_last_json(stdout_text: str):
+    """
+    Return the last valid JSON object found in stdout, even if logs are present.
+    """
+    decoder = json.JSONDecoder()
+    best_obj = None
+    best_end_pos = -1
+    best_start = None
+    txt = (stdout_text or "").strip()
+    for i, ch in enumerate(txt):
+        if ch != "{":
+            continue
+        try:
+            obj, rel_end = decoder.raw_decode(txt[i:])
+            if isinstance(obj, dict):
+                end_pos = i + rel_end
+                if end_pos > best_end_pos or (end_pos == best_end_pos and (best_start is None or i < best_start)):
+                    best_obj = obj
+                    best_end_pos = end_pos
+                    best_start = i
+        except json.JSONDecodeError:
+            continue
+    return best_obj
+
+
 def run_one(export_py: Path, sot: str, patient: str, week_norm: int, use_calibrated: bool) -> dict:
     cmd = [
         sys.executable,
@@ -28,16 +53,11 @@ def run_one(export_py: Path, sot: str, patient: str, week_norm: int, use_calibra
             "error": p.stderr.strip() or p.stdout.strip() or f"exit={p.returncode}",
         }
 
-    # export_stack_v1.py stampa JSON; prendiamo l'ultimo blocco JSON che troviamo
+    # export_stack_v1.py may print logs before JSON.
     txt = p.stdout.strip()
-    start = txt.rfind("{")
-    if start == -1:
-        return {"patient": patient, "week_norm": int(week_norm), "error": "No JSON found in stdout"}
-
-    try:
-        out = json.loads(txt[start:])
-    except Exception as e:
-        return {"patient": patient, "week_norm": int(week_norm), "error": f"JSON parse failed: {e}", "raw": txt}
+    out = _extract_last_json(txt)
+    if out is None:
+        return {"patient": patient, "week_norm": int(week_norm), "error": "No valid JSON found in stdout", "raw": txt}
 
     # forza sempre id nel record
     out.setdefault("meta", {})

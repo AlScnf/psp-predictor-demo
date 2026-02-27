@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import argparse, json
 from pathlib import Path
 import numpy as np
@@ -111,7 +109,8 @@ ISO_MODEL      = MODELS_DIR / "calibration_active.joblib"   # recommended
 if not ISO_MODEL.exists():
     ISO_MODEL  = MODELS_DIR / "isotonic_stack.joblib"        # fallback
 
-THRESH_ACTIVE  = THRESH_DIR / "triage_thresholds.json"
+THRESH_ACTIVE  = THRESH_DIR / "triage_thresholds_active.json"
+THRESH_FALLBACK = THRESH_DIR / "triage_thresholds.json"
 
 # project data (only needed for --from_parquet / montage resolving)
 DATA_PATH      = ROOT / "data" / "processed" / "psp_multimodal.parquet"
@@ -145,9 +144,17 @@ except Exception:
 # thresholds (single source of truth)
 if THRESH_ACTIVE.exists():
     triage = load_json(THRESH_ACTIVE)
+    thresholds_path_used = THRESH_ACTIVE
+elif THRESH_FALLBACK.exists():
+    triage = load_json(THRESH_FALLBACK)
+    thresholds_path_used = THRESH_FALLBACK
 else:
     triage = {"RED": 0.60, "YELLOW": 0.53, "GREEN": 0.40, "prob_col": "p_stack"}
-    warn(f"Active thresholds not found at {THRESH_ACTIVE}. Using defaults {triage}.")
+    thresholds_path_used = None
+    warn(
+        f"Thresholds not found at {THRESH_ACTIVE} or {THRESH_FALLBACK}. "
+        f"Using defaults {triage}."
+    )
 prob_col_for_triage = triage.get("prob_col", "p_stack")
 
 
@@ -373,7 +380,7 @@ out = {
         "n_clip_components": int(K),
         "n_tab_features": int(len(tab_used)),
         "invert_lr": bool(invert_lr),
-        "thresholds_path": str(THRESH_ACTIVE if THRESH_ACTIVE.exists() else THRESH_PATH)
+        "thresholds_path": str(thresholds_path_used) if thresholds_path_used else "inline_default_thresholds"
     }
 }
 

@@ -1,12 +1,8 @@
 {
-  "invert_lr": true,
-  "tabular_used": [
-    "enh_ml_dpct_prev",
-    "edema_ml_dpct_prev",
-    "whole_ml_dpct_prev",
-    "enh_ml_dpct_base",
-    "week_norm_bin"
-  ],
-  "pca_k": 0,
-  "mode": "tabular_only"
+  "mode": "multimodal",
+  "pca_k": 121,
+  "n_total_features": 123,
+  "n_tabular_features": 2,
+  "stack_type": "CalibratedClassifierCV",
+  "invert_lr": false
 }

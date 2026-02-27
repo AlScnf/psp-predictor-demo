@@ -1,10 +1,7 @@
 {
   "tabular_used": [
-    "enh_ml_dpct_prev",
-    "edema_ml_dpct_prev",
-    "whole_ml_dpct_prev",
-    "enh_ml_dpct_base",
-    "week_norm_bin"
+    "week_norm",
+    "week_ord"
   ],
-  "pca_components": 0
+  "pca_components": 121
 }

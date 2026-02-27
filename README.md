@@ -300,6 +300,16 @@ No clinical, diagnostic, or therapeutic decisions should be based on this system
 
 ---
 
+## Full Research Artifact
+
+This repository provides a lightweight inference demo.
+
+A fully reproducible research artifact — including the complete
+feature engineering pipeline, multimodal training workflow,
+and evaluation scripts — is available here: https://github.com/AlScnf/central-review-rano-submission
+
+---
+
 ## Contact & Attribution
 
 This repository builds on:

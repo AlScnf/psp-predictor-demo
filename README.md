@@ -116,7 +116,6 @@ Leave-One-Patient-Out Cross-Validation (LOOCV) is used throughout.
 ```bash
 python scripts/train_psp_multimodal_stack.py \
   --data data/processed/psp_multimodal.parquet \
-  --mode tabular_only \
   --outdir report/psp
 ````
 
